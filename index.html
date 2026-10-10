@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SENTRY · Аппаратный страж IoT-сетей</title>
+<meta name="description" content="SENTRY: устройство между роутером и IoT-устройствами. Локальный ИИ без облака, физическое реле и honeypot. Ищем $60 000 pre-seed.">
+<meta name="theme-color" content="#0A1322">
+<!-- DEPLOY STEP: patch og:url and og:image with the live absolute URL -->
+<meta property="og:title" content="SENTRY · Аппаратный страж IoT-сетей">
+<meta property="og:description" content="Видит атаку на месте и физически её отключает. Pre-seed $60 000.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://example.com/">
+<meta property="og:image" content="https://example.com/assets/og.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='32' fill='%23137A5C'/%3E%3Cpath d='M32 13c5 3 10 4 15 4v13c0 10-6 17-15 21-9-4-15-11-15-21V17c5 0 10-1 15-4z' fill='none' stroke='white' stroke-width='4'/%3E%3Cpath d='M32 18v28c-6-3-10-9-10-16v-9c4 0 7-1 10-3z' fill='white'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Manrope:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<a class="skip" href="#main">К содержанию</a>
+
+<!-- icon sprite -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-cam" viewBox="0 0 24 24"><rect x="2.5" y="6" width="13.5" height="12" rx="2.5"/><path d="M16 10.5l5.5-3.2v9.4L16 13.5"/><circle cx="9.2" cy="12" r="2.6"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18.5h10.2a4.2 4.2 0 0 0 .6-8.36A6.2 6.2 0 0 0 5.9 9.6 4.45 4.45 0 0 0 7 18.5z"/><path d="M12 12v4m-2-2l2 2 2-2"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 7.5L3.5 12 8 16.5M16 7.5l4.5 4.5-4.5 4.5M13.6 5l-3.2 14"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><rect x="2.5" y="5.5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19"/><circle cx="16.5" cy="14.8" r="1.3"/></symbol>
+    <symbol id="i-chip" viewBox="0 0 24 24"><rect x="6.5" y="6.5" width="11" height="11" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M9 3v3.5M12 3v3.5M15 3v3.5M9 17.5V21M12 17.5V21M15 17.5V21M3 9h3.5M3 12h3.5M3 15h3.5M17.5 9H21M17.5 12H21M17.5 15H21"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2.5L4.5 14h7l-1 7.5L19 10h-7z"/></symbol>
+    <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2.5V7M15 2.5V7M6 7h12v4a6 6 0 0 1-12 0zM12 17v4.5"/></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15.5" r="4.5"/><path d="M11.3 12.2L20 3.5M16 7.5l3 3M18.5 5l2 2"/></symbol>
+    <symbol id="i-wifi" viewBox="0 0 24 24"><path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.8 16a5 5 0 0 1 6.4 0"/><circle cx="12" cy="19.3" r="1.1"/></symbol>
+    <symbol id="i-power" viewBox="0 0 24 24"><path d="M12 2.5v9M6.3 6.3a8 8 0 1 0 11.4 0"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+    <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M20.5 12a8.5 8.5 0 1 1-2.6-6.1"/><path d="M20.5 3.5v5h-5"/></symbol>
+    <symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8.5h11a3 3 0 1 0-3-3M3 12.5h15.5a3 3 0 1 1-3 3M3 16.5h7"/></symbol>
+    <symbol id="i-box" viewBox="0 0 24 24"><path d="M12 2.8L3.5 7.5 12 12.2l8.5-4.7zM3.5 7.5v9L12 21.2l8.5-4.7v-9M12 12.2v9"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12.2V3.5h8.7l9.3 9.3-8.7 8.7z"/><circle cx="7.6" cy="7.6" r="1.4"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.2a6 6 0 0 1 3.5 5.8"/></symbol>
+    <symbol id="i-trend" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5.2l3.2 2"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21.5s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 2.8l8 3v6.2c0 5-3.4 8.6-8 10.2-4.6-1.6-8-5.2-8-10.2V5.8z"/><path d="M8.5 12l2.5 2.5 4.5-4.5"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 8V5.5A2.5 2.5 0 0 1 5.5 3H8M16 3h2.5A2.5 2.5 0 0 1 21 5.5V8M21 16v2.5a2.5 2.5 0 0 1-2.5 2.5H16M8 21H5.5A2.5 2.5 0 0 1 3 18.5V16M3 12h18"/></symbol>
+    <symbol id="i-speaker" viewBox="0 0 24 24"><rect x="5.5" y="2.5" width="13" height="19" rx="3"/><circle cx="12" cy="14.5" r="3.2"/><circle cx="12" cy="7" r="1.2"/></symbol>
+    <symbol id="i-printer" viewBox="0 0 24 24"><path d="M6.5 9V3h11v6M6.5 17.5h-2a2 2 0 0 1-2-2V11a2 2 0 0 1 2-2h15a2 2 0 0 1 2 2v4.5a2 2 0 0 1-2 2h-2"/><rect x="6.5" y="14" width="11" height="7" rx="1"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  </defs>
+</svg>
+
+<div class="env" aria-hidden="true"><div class="env-glow"></div><div class="env-grain"></div></div>
+<canvas id="scene" aria-hidden="true" tabindex="-1"></canvas>
+
+<!-- Static device for visitors without WebGL -->
+<svg class="fallback-device" viewBox="0 0 400 380" aria-hidden="true">
+  <defs><linearGradient id="fb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22324F"/><stop offset="1" stop-color="#121D31"/></linearGradient></defs>
+  <line x1="200" y1="70" x2="200" y2="8" stroke="#3A4466" stroke-width="9" stroke-linecap="round"/>
+  <line x1="62" y1="306" x2="14" y2="346" stroke="#3A4466" stroke-width="9" stroke-linecap="round"/>
+  <line x1="338" y1="306" x2="386" y2="346" stroke="#3A4466" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="200" cy="8" r="7" fill="#8C7DFF"/><circle cx="14" cy="346" r="7" fill="#8C7DFF"/><circle cx="386" cy="346" r="7" fill="#8C7DFF"/>
+  <path d="M200 52 Q214 52 222 66 L352 290 Q360 306 342 310 L58 310 Q40 306 48 290 L178 66 Q186 52 200 52Z" fill="url(#fb)" stroke="#33D69F" stroke-opacity=".5" stroke-width="2"/>
+  <path d="M200 92 L320 292 L80 292Z" fill="none" stroke="#33D69F" stroke-opacity=".7" stroke-width="2"/>
+  <path d="M200 170c8 5 16 6 24 6v20c0 16-10 27-24 33-14-6-24-17-24-33v-20c8 0 16-1 24-6z" fill="none" stroke="#33D69F" stroke-width="4"/>
+  <path d="M200 180v40c-8-4-14-12-14-22v-12c6 0 10-2 14-6z" fill="#33D69F"/>
+</svg>
+
+<div class="labels" aria-hidden="true">
+  <span class="lbl" data-anchor="pi" data-side="l" data-dy="-6"><b>Raspberry Pi 4</b>ML-анализ трафика</span>
+  <span class="lbl" data-anchor="esp" data-dy="-40"><b>ESP32-C3 ×3</b>honeypot-приманки</span>
+  <span class="lbl" data-anchor="relay" data-side="l" data-dy="70"><b>Реле / MOSFET</b>физический разрыв цепи</span>
+  <span class="lbl" data-anchor="tpm" data-dy="52"><b>TPM ATECC608A</b>хранение ключей</span>
+  <span class="lbl" data-anchor="power" data-dy="-14"><b>DC-DC / USB-C</b>питание платы</span>
+</div>
+
+<div class="hud chip" aria-live="polite"><span class="hud-dot"></span><span id="hud-text">СЕТЬ · 6 устройств · всё спокойно</span></div>
+
+<div class="rot-hint" aria-hidden="true">
+  <span class="rot-ico"><svg><use href="#i-rotate"/></svg></span>
+  <span class="rot-txt"><b>Покрутите модель</b><span class="rot-desk">Наведите на неё и тяните мышью</span><span class="rot-touch">Проведите пальцем по модели</span></span>
+</div>
+
+<header class="nav">
+  <a class="brand" href="#top" aria-label="SENTRY, наверх">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="#137A5C"/><path d="M32 13c5 3 10 4 15 4v13c0 10-6 17-15 21-9-4-15-11-15-21V17c5 0 10-1 15-4z" fill="none" stroke="#fff" stroke-width="4"/><path d="M32 18v28c-6-3-10-9-10-16v-9c4 0 7-1 10-3z" fill="#fff"/></svg>
+    <span>SENTRY</span>
+  </a>
+  <nav aria-label="Разделы">
+    <a href="#problem">Проблема</a>
+    <a href="#solution">Устройство</a>
+    <a href="#inside">Внутри</a>
+    <a href="#market">Рынок</a>
+    <a href="#forecast">Экономика</a>
+    <a href="#ask">Раунд</a>
+  </nav>
+  <a class="btn btn-sm" href="#contact">Связаться</a>
+  <div class="progress" aria-hidden="true"><i></i></div>
+</header>
+
+<ol class="dots" aria-label="Слайды"></ol>
+<div class="pager" aria-label="Слайды"><button type="button" class="up" aria-label="Предыдущий слайд"><svg><use href="#i-arrow"/></svg></button><span class="pager-n" aria-live="polite"><b>01</b> / 14</span><button type="button" class="down" aria-label="Следующий слайд"><svg><use href="#i-arrow"/></svg></button></div>
+
+<main id="main" tabindex="-1">
+
+<!-- 00 HERO -->
+<section class="slide hero" id="top" data-scene="hero" data-title="SENTRY">
+  <div class="copy" data-reveal>
+    <p class="kicker r" style="--i:0"><span class="pulse"></span>IoT-кибербезопасность · Узбекистан · 2026</p>
+    <h1 class="r" style="--i:1">SENTRY</h1>
+    <p class="lede r" style="--i:2">Страж, который стоит между роутером и вашими умными устройствами. Видит атаку прямо на месте и физически её отключает.</p>
+    <div class="row r" style="--i:3">
+      <a class="btn" href="#problem">Смотреть питч <svg class="i-sm"><use href="#i-arrow"/></svg></a>
+      <a class="btn ghost" href="#ask">Инвесторам: $60K pre-seed</a>
+    </div>
+    <ul class="hero-stats r" style="--i:4">
+      <li><b>100%</b><span>анализа на устройстве</span></li>
+      <li><b>3</b><span>слоя защиты</span></li>
+      <li><b><em class="ap">примерно</em>$89</b><span>цена устройства</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- 01 PROBLEM -->
+<section class="slide" id="problem" data-scene="problem" data-title="Проблема">
+  <div class="copy wide" data-reveal>
+    <p class="kicker r" style="--i:0">01 · Проблема</p>
+    <h2 class="r" style="--i:1">Камера в кафе может открыть дверь во всю сеть.</h2>
+    <div class="grid2">
+      <article class="card pain r" style="--i:2">
+        <span class="ico red"><svg><use href="#i-cam"/></svg></span>
+        <h3>IoT почти не защищён</h3>
+        <p>Камеры, розетки и колонки редко получают обновления. Пароли часто остаются заводскими.</p>
+      </article>
+      <article class="card pain r" style="--i:3">
+        <span class="ico red"><svg><use href="#i-cloud"/></svg></span>
+        <h3>Трафик уходит в чужое облако</h3>
+        <p>Fingbox и Firewalla разбирают его на серверах поставщика.</p>
+      </article>
+      <article class="card pain r" style="--i:4">
+        <span class="ico red"><svg><use href="#i-code"/></svg></span>
+        <h3>Блокировка только программная</h3>
+        <p>Вирус, который попал в систему, может её обойти.</p>
+      </article>
+      <article class="card pain r" style="--i:5">
+        <span class="ico red"><svg><use href="#i-wallet"/></svg></span>
+        <h3>Защита не по карману</h3>
+        <p>Кафе не наймёт специалиста в штат, а Cisco и Fortinet ему не по средствам.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 02 SOLUTION -->
+<section class="slide right" id="solution" data-scene="solution" data-title="Решение">
+  <div class="copy wide" data-reveal>
+    <p class="kicker r" style="--i:0">02 · Решение</p>
+    <h2 class="r" style="--i:1">Три защиты в одной коробке.</h2>
+    <p class="lede r" style="--i:2">Sentry ставится между роутером и IoT-парком. Весь трафик проходит через него, и ничего не уходит наружу.</p>
+    <div class="feats">
+      <a class="card feat r" style="--i:3" href="#ml">
+        <span class="ico"><svg><use href="#i-chip"/></svg></span>
+        <span class="feat-n">01</span>
+        <h3>Edge ML</h3>
+        <p>Ищет аномалии прямо на устройстве, без облака</p>
+        <span class="more">Подробнее <svg class="i-sm"><use href="#i-arrow"/></svg></span>
+      </a>
+      <a class="card feat r" style="--i:4" href="#relay">
+        <span class="ico"><svg><use href="#i-bolt"/></svg></span>
+        <span class="feat-n">02</span>
+        <h3>Рубильник</h3>
+        <p>Реле физически отключает заражённое устройство</p>
+        <span class="more">Подробнее <svg class="i-sm"><use href="#i-arrow"/></svg></span>
+      </a>
+      <a class="card feat r" style="--i:5" href="#honey">
+        <span class="ico violet"><svg><use href="#i-target"/></svg></span>
+        <span class="feat-n">03</span>
+        <h3>Honeypot</h3>
+        <p>Приманивает атакующих и записывает их методы</p>
+        <span class="more">Подробнее <svg class="i-sm"><use href="#i-arrow"/></svg></span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- 02.1 ML -->
+<section class="slide right" id="ml" data-scene="ml" data-title="Edge ML">
+  <div class="copy" data-reveal>
+    <p class="kicker r" style="--i:0">Модуль 1 · Edge ML</p>
+    <h2 class="r" style="--i:1">Думает на месте. Ничего не отправляет в облако.</h2>
+    <p class="r" style="--i:2">Лёгкая модель (Isolation Forest или маленький автоэнкодер) работает прямо на Raspberry Pi и замечает странное.</p>
+    <div class="card term r" style="--i:3">
+      <div class="term-bar"><i></i><i></i><i></i><span>sentry · edge-ml · локально</span></div>
+      <ul class="term-log">
+        <li><span class="t">14:02:07</span><span class="ok">OK</span>розетка-1 → роутер <em>0.04</em></li>
+        <li><span class="t">14:02:09</span><span class="ok">OK</span>принтер → роутер <em>0.07</em></li>
+        <li class="bad"><span class="t">14:02:11</span><span class="er">АНОМАЛИЯ</span>камера-2 → 203.0.113.42 <em>0.97</em></li>
+        <li class="bad"><span class="t">14:02:12</span><span class="er">СКАН</span>колонка → вся подсеть <em>0.91</em></li>
+        <li><span class="t">14:02:12</span><span class="act">РЕЛЕ</span>порт 3 обесточен</li>
+      </ul>
+    </div>
+    <p class="note r" style="--i:4">Модель учится на открытых датасетах IoT-трафика: N-BaIoT, IoT-23.</p>
+  </div>
+</section>
+
+<!-- 02.2 RELAY + interactive moment -->
+<section class="slide" id="relay" data-scene="relay" data-title="Рубильник">
+  <div class="copy" data-reveal>
+    <p class="kicker r" style="--i:0">Модуль 2 · Аппаратное реле</p>
+    <h2 class="r" style="--i:1">Не блокирует. Отключает.</h2>
+    <p class="r" style="--i:2">Когда угроза найдена, Raspberry Pi подаёт сигнал на реле. Реле обесточивает порт заражённого устройства. Программой это не обойти: цепь просто разомкнута.</p>
+    <div class="card hold-wrap r" style="--i:3">
+      <button id="hold" class="hold" type="button" aria-pressed="false" aria-describedby="hold-help">
+        <svg class="hold-ring" viewBox="0 0 60 60" aria-hidden="true"><circle class="track" cx="30" cy="30" r="26"/><circle class="bar" cx="30" cy="30" r="26"/></svg>
+        <svg class="hold-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
+      </button>
+      <div>
+        <p class="hold-label" id="hold-label">Зажмите, чтобы разорвать цепь</p>
+        <p class="hold-help" id="hold-help">Удерживайте кнопку мышью, пальцем или пробелом. Смотрите на камеру справа.</p>
+        <p class="hold-result" id="hold-result" hidden>Заражённая камера отключена. Остальная сеть работает. <button type="button" class="link" id="hold-reset">Подключить обратно</button></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 02.3 HONEYPOT -->
+<section class="slide right" id="honey" data-scene="honey" data-title="Honeypot">
+  <div class="copy" data-reveal>
+    <p class="kicker r" style="--i:0">Модуль 3 · Honeypot</p>
+    <h2 class="r" style="--i:1">Приманка для тех, кто ищет слабое место.</h2>
+    <p class="r" style="--i:2">Три модуля ESP32-C3 притворяются уязвимыми устройствами. Атакующий тратит время на подделку, а Sentry записывает каждый его шаг.</p>
+    <div class="decoys r" style="--i:3">
+      <div class="card decoy"><span class="ico violet"><svg><use href="#i-cam"/></svg></span><b>Камера</b><small>порт 554 открыт</small></div>
+      <div class="card decoy"><span class="ico violet"><svg><use href="#i-speaker"/></svg></span><b>Колонка</b><small>пароль admin</small></div>
+      <div class="card decoy"><span class="ico violet"><svg><use href="#i-printer"/></svg></span><b>Принтер</b><small>старая прошивка</small></div>
+    </div>
+    <p class="quote r" style="--i:4">Атака на одно кафе учит защищать все остальные.</p>
+    <p class="note r" style="--i:5">Данные приманок обновляют ML-модель на всех устройствах сети. На базе Cowrie и Dionaea, адаптированных под ARM.</p>
+  </div>
+</section>
+
+<!-- 03 INSIDE -->
+<section class="slide inside" id="inside" data-scene="inside" data-title="Внутри">
+  <div class="copy wide" data-reveal>
+    <p class="kicker r" style="--i:0">03 · Внутри</p>
+    <h2 class="r" style="--i:1">Что куда идёт и зачем.</h2>
+    <ol class="flow">
+      <li class="card r" style="--i:2"><span class="ico"><svg><use href="#i-plug"/></svg></span><div><b>Вход трафика</b><p>Кабель от роутера идёт в USB-Ethernet. У платы появляется второй LAN-порт для прозрачного моста.</p></div></li>
+      <li class="card r" style="--i:3"><span class="ico"><svg><use href="#i-chip"/></svg></span><div><b>Анализ на Raspberry Pi</b><p>Весь трафик идёт через плату, модель ищет аномалии без облака.</p></div></li>
+      <li class="card r" style="--i:4"><span class="ico red"><svg><use href="#i-bolt"/></svg></span><div><b>Физический разрыв</b><p>При угрозе Pi даёт сигнал реле, и оно обесточивает нужный порт.</p></div></li>
+      <li class="card r" style="--i:5"><span class="ico violet"><svg><use href="#i-wifi"/></svg></span><div><b>Honeypot на ESP32</b><p>Чип поднимает ложную «уязвимую камеру» и пишет действия атакующего.</p></div></li>
+      <li class="card r" style="--i:6"><span class="ico"><svg><use href="#i-key"/></svg></span><div><b>Ключи в TPM</b><p>ATECC608A хранит ключи и проверяет прошивку. Доступ только у Pi по I2C.</p></div></li>
+      <li class="card r" style="--i:7"><span class="ico"><svg><use href="#i-power"/></svg></span><div><b>Питание</b><p>USB-C с Power Delivery через DC-DC кормит плату, адаптер, реле и ESP32.</p></div></li>
+    </ol>
+  </div>
+</section>
+
+<!-- 03.1 REAL PARTS -->
+<section class="slide dense" id="parts" data-scene="parts" data-title="Компоненты">
+  <div class="panel" data-reveal>
+    <div class="panel-head">
+      <div>
+        <p class="kicker r" style="--i:0">Элементная база</p>
+        <h2 class="r" style="--i:1">Доступные детали. Никакой экзотики.</h2>
+      </div>
+      <div class="big-num r" style="--i:2"><b><em class="ap">примерно</em>$85</b><span>себестоимость прототипа</span></div>
+    </div>
+    <div class="parts">
+      <figure class="card part r" style="--i:3">
+        <div class="part-img"><img src="assets/pi4-cut.webp" alt="Плата Raspberry Pi 4 Model B" width="1000" height="772" loading="lazy"></div>
+        <figcaption><span class="tag"><em class="ap">примерно</em>$45</span><b>Raspberry Pi 4</b><span>Мозг устройства: Linux, ML-модель, обработка трафика</span></figcaption>
+      </figure>
+      <figure class="card part r" style="--i:4">
+        <div class="part-img"><img src="assets/esp32-cut.webp" alt="Модуль ESP32 на отладочной плате" width="800" height="800" loading="lazy"></div>
+        <figcaption><span class="tag"><em class="ap">примерно</em>$6</span><b>ESP32</b><span>Wi-Fi приманка для honeypot</span></figcaption>
+      </figure>
+      <div class="card bom r" style="--i:5">
+        <p class="mono-h">Из чего <em class="ap">примерно</em>$85</p>
+        <ul class="bars-list">
+          <li style="--v:45"><span>Raspberry Pi 4 (2 ГБ)</span><b><em class="ap">примерно</em>$45</b></li>
+          <li style="--v:8"><span>USB-Ethernet RTL8153</span><b><em class="ap">примерно</em>$8</b></li>
+          <li style="--v:8"><span>Корпус, 3D-печать</span><b><em class="ap">примерно</em>$8</b></li>
+          <li style="--v:6"><span>ESP32 модуль</span><b><em class="ap">примерно</em>$6</b></li>
+          <li style="--v:6"><span>TPM ATECC608A</span><b><em class="ap">примерно</em>$6</b></li>
+          <li style="--v:5"><span>Провода, крепёж, сборка</span><b><em class="ap">примерно</em>$5</b></li>
+          <li style="--v:4"><span>DC-DC / USB-C PD</span><b><em class="ap">примерно</em>$4</b></li>
+          <li style="--v:3"><span>Реле / MOSFET</span><b><em class="ap">примерно</em>$3</b></li>
+        </ul>
+        <p class="note">Цены ориентировочные. При заказе от 500 штук дешевле на 15–20%.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 VARIANTS -->
+<section class="slide" id="variants" data-scene="variants" data-title="Корпус">
+  <div class="copy" data-reveal>
+    <p class="kicker r" style="--i:0">04 · Корпус</p>
+    <h2 class="r" style="--i:1">Две формы. Одна начинка.</h2>
+    <div class="seg r" style="--i:2" role="group" aria-label="Вариант корпуса">
+      <button type="button" data-variant="0" aria-pressed="true">Треугольный</button>
+      <button type="button" data-variant="1" aria-pressed="false">Прямоугольный</button>
+    </div>
+    <div class="vspec r" style="--i:3" data-spec="0">
+      <div class="card spec"><span class="ico violet"><svg><use href="#i-wifi"/></svg></span><small>Антенны</small><b>3 направления сразу</b></div>
+      <div class="card spec"><span class="ico"><svg><use href="#i-wind"/></svg></span><small>Охлаждение</small><b>Конвекция + тихий вентилятор</b></div>
+      <div class="card spec"><span class="ico"><svg><use href="#i-tag"/></svg></span><small>Корпус</small><b><em class="ap">примерно</em>$10–18</b></div>
+      <div class="card spec"><span class="ico"><svg><use href="#i-users"/></svg></span><small>Роль</small><b>Флагман для демо-дня</b></div>
+    </div>
+    <div class="vspec r" style="--i:3" data-spec="1" hidden>
+      <div class="card spec"><span class="ico violet"><svg><use href="#i-wifi"/></svg></span><small>Антенны</small><b>2 сверху, наружу</b></div>
+      <div class="card spec"><span class="ico"><svg><use href="#i-wind"/></svg></span><small>Охлаждение</small><b>Пассивное, как дымоход</b></div>
+      <div class="card spec"><span class="ico"><svg><use href="#i-tag"/></svg></span><small>Корпус</small><b><em class="ap">примерно</em>$5–10</b></div>
+      <div class="card spec"><span class="ico"><svg><use href="#i-users"/></svg></span><small>Роль</small><b>Прототип и пилоты</b></div>
+    </div>
+    <p class="hint r" style="--i:4"><svg class="i-sm"><use href="#i-rotate"/></svg>Схватите модель справа и покрутите. Двойной клик по ней возвращает её на место.</p>
+  </div>
+</section>
+
+<!-- 05 COMPETITORS -->
+<section class="slide dense" id="compete" data-scene="compete" data-title="Конкуренты">
+  <div class="panel" data-reveal>
+    <div class="panel-head">
+      <div>
+        <p class="kicker r" style="--i:0">05 · Конкуренты</p>
+        <h2 class="r" style="--i:1">Только Sentry отключает угрозу физически.</h2>
+      </div>
+    </div>
+    <div class="cmp r" style="--i:2" role="table" aria-label="Сравнение с конкурентами">
+      <div class="cmp-col cmp-keys" role="rowgroup">
+        <div class="cmp-h" role="columnheader"></div>
+        <div role="rowheader">Где анализ трафика</div>
+        <div role="rowheader">Физическая блокировка</div>
+        <div role="rowheader">Honeypot</div>
+        <div role="rowheader">Цена</div>
+        <div role="rowheader">Для кого</div>
+      </div>
+      <div class="cmp-col" role="rowgroup">
+        <div class="cmp-h" role="columnheader">Fingbox</div>
+        <div role="cell" data-l="Где анализ трафика">В облаке Fing</div>
+        <div role="cell" data-l="Физическая блокировка"><span class="mk no"><svg><use href="#i-x"/></svg></span>Только софт</div>
+        <div role="cell" data-l="Honeypot"><span class="mk no"><svg><use href="#i-x"/></svg></span>Нет</div>
+        <div role="cell" data-l="Цена"><em class="ap">примерно</em>$95–175 разово</div>
+        <div role="cell" data-l="Для кого">Домохозяйства</div>
+      </div>
+      <div class="cmp-col" role="rowgroup">
+        <div class="cmp-h" role="columnheader">Firewalla</div>
+        <div role="cell" data-l="Где анализ трафика">Локально + облако</div>
+        <div role="cell" data-l="Физическая блокировка"><span class="mk no"><svg><use href="#i-x"/></svg></span>Только софт</div>
+        <div role="cell" data-l="Honeypot"><span class="mk no"><svg><use href="#i-x"/></svg></span>Нет</div>
+        <div role="cell" data-l="Цена"><em class="ap">примерно</em>устройство + от $9.99/мес</div>
+        <div role="cell" data-l="Для кого">Дома и энтузиасты</div>
+      </div>
+      <div class="cmp-col us" role="rowgroup">
+        <div class="cmp-h" role="columnheader"><svg class="i-sm"><use href="#i-shield"/></svg>Sentry</div>
+        <div role="cell" data-l="Где анализ трафика">Полностью на устройстве</div>
+        <div role="cell" data-l="Физическая блокировка"><span class="mk yes"><svg><use href="#i-check"/></svg></span>Аппаратное реле</div>
+        <div role="cell" data-l="Honeypot"><span class="mk yes"><svg><use href="#i-check"/></svg></span>Встроенный</div>
+        <div role="cell" data-l="Цена"><em class="ap">примерно</em>$89 + от $4.99/мес</div>
+        <div role="cell" data-l="Для кого">Малый бизнес + дома</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 MARKET -->
+<section class="slide dense" id="market" data-scene="market" data-title="Рынок">
+  <div class="panel split" data-reveal>
+    <div>
+      <p class="kicker r" style="--i:0">06 · Рынок</p>
+      <h2 class="r" style="--i:1">Впервые в Узбекистане. Начинаем с кафе.</h2>
+      <p class="r" style="--i:2">Кафе, коворкинги, клиники и отели. Здесь боль сильнее, а платить готовы больше, чем в массовом B2C.</p>
+      <ul class="cities r" style="--i:3">
+        <li class="card" style="--v:50"><span class="ico"><svg><use href="#i-pin"/></svg></span><div><b>Ташкент <em>50%</em></b><small>Максимум бизнеса, доступ к IT Park Ventures</small><i class="bar"></i></div></li>
+        <li class="card" style="--v:20"><span class="ico"><svg><use href="#i-pin"/></svg></span><div><b>Самарканд <em>20%</em></b><small>Туризм, отели и гостевые дома</small><i class="bar"></i></div></li>
+        <li class="card" style="--v:15"><span class="ico"><svg><use href="#i-pin"/></svg></span><div><b>Бухара <em>15%</em></b><small>Турпоток, плотный малый бизнес</small><i class="bar"></i></div></li>
+        <li class="card" style="--v:15"><span class="ico"><svg><use href="#i-pin"/></svg></span><div><b>Ферганская долина <em>15%</em></b><small>Плотность населения, доступный чек</small><i class="bar"></i></div></li>
+      </ul>
+    </div>
+    <figure class="card rings r" style="--i:3">
+      <svg viewBox="0 0 500 340" role="img" aria-label="TAM 36 390, SAM 5 459, SOM около 820 предприятий">
+        <circle cx="170" cy="175" r="150" class="ring-tam"/>
+        <circle cx="170" cy="267" r="58" class="ring-sam"/>
+        <circle cx="170" cy="302.5" r="22.5" class="ring-som"/>
+        <text x="170" y="80" class="rv">36 390</text><text x="170" y="104" class="rl">TAM · малые кафе и отели страны</text>
+        <line x1="226" y1="252" x2="380" y2="214" class="lead"/><text x="386" y="206" class="rv sm" text-anchor="start">5 459</text><text x="386" y="226" class="rl" text-anchor="start">SAM · 3 города</text>
+        <line x1="192" y1="306" x2="380" y2="300" class="lead"/><text x="386" y="292" class="rv sm acc" text-anchor="start">≈ 820</text><text x="386" y="312" class="rl" text-anchor="start">SOM · Год 3</text>
+      </svg>
+      <figcaption>Распределение SAM по городам · источник: stat.uz, 01.01.2025</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 07 MODEL -->
+<section class="slide dense" id="model" data-scene="model" data-title="Бизнес-модель">
+  <div class="panel" data-reveal>
+    <div class="panel-head">
+      <div>
+        <p class="kicker r" style="--i:0">07 · Бизнес-модель</p>
+        <h2 class="r" style="--i:1">Железо почти по себестоимости. Деньги в подписке.</h2>
+      </div>
+    </div>
+    <div class="price-row">
+      <div class="card price r" style="--i:2"><span class="ico"><svg><use href="#i-box"/></svg></span><span class="mono-h">Устройство</span><b><em class="ap">примерно</em>$89</b><small>Себестоимость <em class="ap">примерно</em>$85. Цель: быстро набрать базу.</small></div>
+      <div class="card price r" style="--i:3"><span class="ico"><svg><use href="#i-shield"/></svg></span><span class="mono-h">Подписка B2C</span><b><em class="ap">примерно</em>$4.99<i>/мес</i></b><small>Сигнатуры атак и аналитика.</small></div>
+      <div class="card price accent r" style="--i:4"><span class="badge">Основной доход</span><span class="ico"><svg><use href="#i-users"/></svg></span><span class="mono-h">Подписка B2B</span><b><em class="ap">примерно</em>$19.99<i>/мес</i></b><small>Диапазон примерно $14.99–29.99. Сеть кафе из одной панели, отчёты для аудита.</small></div>
+    </div>
+    <div class="metrics">
+      <div class="card metric r" style="--i:5"><b data-count="5.93" data-dec="2" data-suf="x">5.93x</b><span>LTV : CAC</span></div>
+      <div class="card metric r" style="--i:6"><b data-count="5.7" data-dec="1" data-suf=" мес">5.7 мес</b><span>окупаемость CAC</span></div>
+      <div class="card metric r" style="--i:7"><b><em class="ap">примерно</em>$40</b><span>стоимость клиента (CAC)</span></div>
+      <div class="card metric r" style="--i:8"><b data-count="29" data-suf="%">29%</b><span>EBITDA-маржа, Год 3</span></div>
+    </div>
+    <p class="note price-note r" style="--i:9">Все цены и метрики ориентировочные: это расчёты на этапе прототипа, они уточнятся после пилота.</p>
+  </div>
+</section>
+
+<!-- 08 FORECAST -->
+<section class="slide dense" id="forecast" data-scene="forecast" data-title="Прогноз">
+  <div class="panel split" data-reveal>
+    <div>
+      <p class="kicker r" style="--i:0">08 · Прогноз на 3 года</p>
+      <h2 class="r" style="--i:1">В плюс уже на второй год.</h2>
+      <p class="r" style="--i:2">Подписка с первого года приносит больше, чем железо. К третьему году это 62% выручки.</p>
+      <div class="card fc-wrap r" style="--i:3">
+        <table class="fc">
+          <thead><tr><th scope="col"></th><th scope="col">Год 1</th><th scope="col">Год 2</th><th scope="col">Год 3</th></tr></thead>
+          <tbody>
+            <tr><th scope="row">Устройств продано</th><td>300</td><td>900</td><td>2 200</td></tr>
+            <tr><th scope="row">Подписчиков</th><td>270</td><td>1 080</td><td>3 060</td></tr>
+            <tr><th scope="row">Выручка</th><td>$55.0K</td><td>$193.4K</td><td>$516.7K</td></tr>
+            <tr><th scope="row">EBITDA</th><td class="neg">−$21.5K</td><td class="pos">$19.2K</td><td class="pos">$148.4K</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <figure class="card chart r" style="--i:3">
+      <svg viewBox="0 0 600 320" role="img" aria-label="Выручка по годам: $55K, $193K, $517K. Доля подписки растёт.">
+        <line x1="40" y1="270" x2="580" y2="270" class="axis"/>
+        <line x1="40" y1="150" x2="580" y2="150" class="grid"/><line x1="40" y1="30" x2="580" y2="30" class="grid"/>
+        <g class="bars">
+          <rect x="90" y="257.7" width="90" height="12.3" rx="4" class="b-dev" style="--d:0"/>
+          <rect x="90" y="244.6" width="90" height="13.1" rx="4" class="b-sub" style="--d:1"/>
+          <rect x="270" y="233" width="90" height="37" rx="4" class="b-dev" style="--d:2"/>
+          <rect x="270" y="180.7" width="90" height="52.3" rx="4" class="b-sub" style="--d:3"/>
+          <rect x="450" y="179.6" width="90" height="90.4" rx="4" class="b-dev" style="--d:4"/>
+          <rect x="450" y="31.5" width="90" height="148.1" rx="4" class="b-sub" style="--d:5"/>
+        </g>
+        <text x="135" y="234" class="bv">$55K</text><text x="315" y="170" class="bv">$193K</text><text x="495" y="21" class="bv">$517K</text>
+        <text x="135" y="295" class="bl">Год 1</text><text x="315" y="295" class="bl">Год 2</text><text x="495" y="295" class="bl">Год 3</text>
+      </svg>
+      <figcaption><span class="key k-sub"></span>Подписка <span class="key k-dev"></span>Устройства · прогноз, цифры ориентировочные</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- 09 ASK -->
+<section class="slide" id="ask" data-scene="ask" data-title="Раунд">
+  <div class="copy" data-reveal>
+    <p class="kicker r" style="--i:0">09 · Раунд</p>
+    <h2 class="big r" style="--i:1">Ищем <span class="acc">$60 000</span> pre-seed.</h2>
+    <div class="card funds r" style="--i:2">
+      <div class="donut-wrap">
+        <svg viewBox="0 0 160 160" aria-hidden="true" class="donut">
+          <circle cx="80" cy="80" r="60" class="d-track"/>
+          <circle cx="80" cy="80" r="60" class="d1" style="--len:150.8;--off:0"/>
+          <circle cx="80" cy="80" r="60" class="d2" style="--len:113.1;--off:-150.8"/>
+          <circle cx="80" cy="80" r="60" class="d3" style="--len:113.1;--off:-263.9"/>
+        </svg>
+        <span class="donut-c"><b>$60K</b><small>pre-seed</small></span>
+      </div>
+      <ul>
+        <li><i class="c1"></i><b>40% · $24 000</b>первая партия, 300 устройств</li>
+        <li><i class="c2"></i><b>30% · $18 000</b>сертификация и финальный прототип</li>
+        <li><i class="c3"></i><b>30% · $18 000</b>команда и операции на 6 месяцев</li>
+      </ul>
+    </div>
+    <div class="row r" style="--i:3"><a class="btn" href="#contact">Обсудить инвестицию <svg class="i-sm"><use href="#i-arrow"/></svg></a><a class="btn ghost" href="#contact">Стать пилотом</a></div>
+  </div>
+</section>
+
+<!-- 11 CONTACT -->
+<section class="slide dense" id="contact" data-scene="contact" data-title="Контакт">
+  <div class="panel split" data-reveal>
+    <div>
+      <p class="kicker r" style="--i:0">Связаться</p>
+      <h2 class="r" style="--i:1">Поставим Sentry в вашу сеть.</h2>
+      <p class="r" style="--i:2">Инвесторам пришлём финмодель и бизнес-план. Кафе, коворкингам и клиникам в Ташкенте предложим место в пилоте.</p>
+      <p class="mono-h team-h r" style="--i:3">Команда</p>
+      <div class="team r" style="--i:4">
+        <div class="card founder">
+          <span class="avatar" aria-hidden="true">ИС</span>
+          <div><b>Исаев Сардор</b><small>Основатель, автор идеи и проекта</small></div>
+        </div>
+        <div class="card founder">
+          <span class="avatar alt" aria-hidden="true">АУ</span>
+          <div><b>Умурзаков Азим</b><small>Заместитель руководителя, разработчик</small></div>
+        </div>
+      </div>
+    </div>
+    <form class="card form r" style="--i:3" id="lead" novalidate>
+      <label>Имя<input name="name" autocomplete="name" required placeholder="Как к вам обращаться"></label>
+      <label>Email или Telegram<input name="contact" required placeholder="you@mail.uz или @username"></label>
+      <fieldset>
+        <legend>Кто вы</legend>
+        <div class="chips">
+          <label><input type="radio" name="role" value="investor" checked><span>Инвестор</span></label>
+          <label><input type="radio" name="role" value="pilot"><span>Бизнес для пилота</span></label>
+          <label><input type="radio" name="role" value="partner"><span>Партнёр</span></label>
+        </div>
+      </fieldset>
+      <label>Сообщение<textarea name="msg" rows="3" placeholder="Пара слов о вас или вопрос"></textarea></label>
+      <button class="btn full" type="submit">Отправить <svg class="i-sm"><use href="#i-arrow"/></svg></button>
+      <p class="form-ok" role="status" hidden>Спасибо! Заявка принята, мы скоро напишем.</p>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <span>© 2026 SENTRY · Ташкент</span>
+  <span>Команда: Исаев Сардор, Умурзаков Азим</span>
+  <span>Курс в модели: 1 USD = 11 750 UZS</span>
+  <span>Все цены на сайте ориентировочные.</span>
+  <span>3D-модель устройства является концептом. Финальный корпус может отличаться.</span>
+</footer>
+
+<script type="module" src="assets/app.js"></script>
+</body>
+</html>
